@@ -1,0 +1,9 @@
+services:
+  ip-tracker:
+    build: .
+    container_name: whereismyhome
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    # No ports needed — bots use outbound connections only

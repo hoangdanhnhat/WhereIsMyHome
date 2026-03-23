@@ -1,0 +1,6 @@
+# Core
+httpx>=0.27,<1
+# Discord
+discord.py>=2.3,<3
+# Telegram
+python-telegram-bot>=21,<22
