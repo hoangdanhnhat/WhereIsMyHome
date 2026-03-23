@@ -24,7 +24,7 @@ def _build_message(
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "[IP Tracker] Your public IP has changed"
     msg["From"] = config.smtp_user
-    msg["To"] = config.notify_email
+    msg["To"] = ", ".join(config.notify_emails)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
@@ -94,7 +94,11 @@ class EmailNotifier:
                 # SSL
                 with smtplib.SMTP_SSL(self.cfg.smtp_host, self.cfg.smtp_port) as srv:
                     srv.login(self.cfg.smtp_user, self.cfg.smtp_pass)
-                    srv.send_message(msg)
+                    srv.sendmail(
+                        self.cfg.smtp_user,
+                        self.cfg.notify_emails,
+                        msg.as_string(),
+                    )
             else:
                 # STARTTLS
                 with smtplib.SMTP(self.cfg.smtp_host, self.cfg.smtp_port) as srv:
@@ -102,8 +106,12 @@ class EmailNotifier:
                     srv.starttls()
                     srv.ehlo()
                     srv.login(self.cfg.smtp_user, self.cfg.smtp_pass)
-                    srv.send_message(msg)
+                    srv.sendmail(
+                        self.cfg.smtp_user,
+                        self.cfg.notify_emails,
+                        msg.as_string(),
+                    )
 
-            logger.info("Email notification sent to %s", self.cfg.notify_email)
+            logger.info("Email notification sent to %s", self.cfg.notify_emails)
         except Exception as exc:
             logger.error("Failed to send email: %s", exc)

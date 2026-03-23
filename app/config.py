@@ -56,7 +56,7 @@ class EmailConfig:
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_pass: str = ""
-    notify_email: str = ""
+    notify_emails: list[str] = field(default_factory=list)
 
     def validate(self) -> list[str]:
         errors: list[str] = []
@@ -66,10 +66,11 @@ class EmailConfig:
             ("SMTP_HOST", self.smtp_host),
             ("SMTP_USER", self.smtp_user),
             ("SMTP_PASS", self.smtp_pass),
-            ("NOTIFY_EMAIL", self.notify_email),
         ]:
             if not val:
                 errors.append(f"{name} is required when Email is enabled")
+        if not self.notify_emails:
+            errors.append("NOTIFY_EMAIL is required when Email is enabled (comma-separated for multiple)")
         return errors
 
 
@@ -147,7 +148,10 @@ def load_config() -> AppConfig:
             smtp_port=_int_env("SMTP_PORT", 587),
             smtp_user=os.getenv("SMTP_USER", "").strip(),
             smtp_pass=os.getenv("SMTP_PASS", "").strip(),
-            notify_email=os.getenv("NOTIFY_EMAIL", "").strip(),
+            notify_emails=[
+                e.strip() for e in os.getenv("NOTIFY_EMAIL", "").split(",")
+                if e.strip()
+            ],
         ),
         telegram=TelegramConfig(
             enabled=_bool_env("TELEGRAM_ENABLED"),
